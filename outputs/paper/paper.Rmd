@@ -1,0 +1,152 @@
+---
+title: "The relationship between the age of first marriage and age of respondent when parents divorced"
+subtitle: ""
+author: 
+  - First author Shan Lin
+  - Another author Chengran Zhang
+thanks: "Code and data are available at: https://github.com/skylar03/2022p3.git."
+date: "`r format(Sys.time(), '%d %B %Y')`"
+abstract: "We have cleaned the raw data set from the CHASS data center and analyzed the relationship between the first marriage age and the age of respondent when parents divorced. We have found that parents marrige status will signifcantly affect children's marrige age and this discovery on the family factors will also reflect on the stability of society "
+output:
+  bookdown::pdf_document2
+toc: FALSE
+bibliography: references.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+
+```
+
+# Introduction
+
+Family is the social group that we contact the earliest and live in for the longest time in our life experience. But in order to make our family life happy and harmony, it requires human wisdom. Family is a window for us to observe and understand the society since family is an important part of the society, and we can deal with the problems in the family only when we really understand the society. By doing the general social survey on families, we can understand the law of family evolution under the influence of society, so as to gain the understanding of the true meaning of family and family life. While seeking the happiness of family life for oneself, it also contributes to the stability of society.
+
+In this paper we will mainly focus on the age of people's first marriage based on their family type based on the 2017 GSS(General Social Survey) program. There will be a data analysis which includes the information of the data, statistical analysis of the data, the regression model that the data set fits, and the result part to conclude the finding of the data. There will also be graphs to help explaining the data and a discussion section to talk about what we have done, what is interesting about the result, and any further steps that we can do in the future.
+
+In order to make a clear and reproducible study, we have cleaned the raw data set from the 2017 GSS data downloaded from the CHASS Data center by clearing all the irrelevant variables that we are not interested in. From our study we have concluded that the age people first get married have significant relationship with gender and the age that their parents get divorced.
+
+
+# Data
+
+
+```{r, echo=FALSE, include = FALSE}
+raw_data <- readr::read_csv("raw_data.csv"
+                     )
+names(raw_data)
+reduced_data = raw_data %>% 
+  select(agema1c,
+         famtype,
+         sex, 
+         apardivc) %>%
+  filter(agema1c <= 50,
+         apardivc < 96) %>%
+  mutate(sex = ifelse(sex == 1, "Male", "Female")) %>%
+  mutate(famtype = case_when(
+    famtype == 1 ~ "Couple only",
+    famtype == 2 ~ "Intact family",
+    famtype == 3 ~ "Step-family with common child",
+    famtype == 4 ~ "Step-family without a common child",
+    famtype == 5 ~ "Lone parent family",
+    famtype == 6 ~ "No spouse/partner or children in the household"
+  )) %>%
+  rename(age = agema1c,
+         type = famtype,
+         aged = apardivc)
+```
+Our goal is to use GSS data to access population information about all persons who are 15 years old or older in Canada. The frame includes two parts, the telephone number available on Statistic Canada and the Address Register. There are about 86% of telephone numbers were linked to the Address Register and about 14% of telephone numbers were not linked to the Address Register. All of them were included in the survey frame. When we take telephone surveys if more than one telephone number is recorded, the first telephone number was considered according to the type of telephone number (landline telephone numbers first and cellular telephone numbers last). The minimum sample size for each stratum was required to ensure the diversity and range of samples. The target sample size is 20,000, but the actual sample size is 20,602.
+
+The data were divided into 27 strata based on the geographic area, and then the simple random sampling without replacement was conducted for each stratum. During data collection, if a household did not include at least one person who is 15 years old or older, then the household does not have eligibility to be included in the sample. The data of the 2017 GSS is collected by computer-assisted telephone interviews (CATI), and respondents can choose one official language during the interviews. The telephone survey is a good method to collect useful information and avoid irrelevant answers. However, it is the key disadvantage that the telephone survey is a time-consuming and heavy workload. 
+
+We aired to focus on the relationship between the age of respondents first marriage and the age of respondents when their parents’ divorce. We download the 2017 GSS data from the website of the CHASS Data center. Because the data include a lot of variables which we are not interested, we did some data cleaning. We select 4 variables including agema1c, famtype, apardivc, and sex, which is related to the topic we are interested. The variable agema1c is the age of respondents first marriage, and we rename it called age. The variable famtype is the family type of the respondents, and we rename it called type. The variable apardivc is the age of the respondent when their parents’ divorce, and we rename it called aged. The variable sex is the sex of respondents. If the answer of variable sex is 1, it means male, and if the answer of it is 2, it means female. We use the actual meaning to replace the numeric answer. Similarly, we used the actual meaning to replace the numeric answers of variable type. Thus, we can see the data more clearly. 
+
+
+
+
+# Model
+
+```{r, include = FALSE}
+summary(lm(age ~ sex + aged + type, data = reduced_data))$coefficients
+```
+We fit a multiple linear regression to see the effects of sex, family type, and the age of respondents when their parents divorced on the age of respondents first marriage. 
+
+
+\begin{equation}
+age = 22.458 + 3.212 * sexMale - 0.012 * aged + 0.382 * typeIF + 2.616 * typeLPF + 1.359 * typeN + 0.599 * typeSFC + 0.868 * typeSF 
+\end{equation}
+
+where:
+
+- typeIF means family type is Intact family
+- typeLPF means family type is Lone parent family
+- typeN means family type is No spouse/partner or children in the household
+- typeSFC means family type is Step-family with common child
+- typeSF means family type is Step-family without a common child
+
+
+# Results
+From the multiple linear regression, we can see that the age of male respondents first marriage is about 3.212 years larger than female because the coefficient of sexMale is 3.212. The coefficient of aged is 0.012, so as one unit of the age of respondents when their parents divorced, the age of the respondent's first marriage decreases 0.012. Also, we can see the effect of a different family type of the respondent on the age of the respondent's first marriage. For couple only family type, the age of respondents' first marriage is smaller than other family types. The age of respondents' first marriage for intact family type is increasing by 0.382 than couple only family type. The first marriage age for lone-parent families is increasing by 2.616 than the couple-only family type. The first marriage age for no spouse/partner or children in the household is increasing by 1.359 than the couple only family type. The first marriage age for stepfamily with the common child is increasing by 0.599 than the couple only family type. The first marriage age for stepfamily without a common child is increasing by 0.868 than the couple-only family type. 
+
+From the graphs, for the lone parent family type and stepfamily with the common child the change of the age of the respondents' parent divorced increases has a larger impact on the age of respondents first marriage than other family types. Also, the graphs clearly show that the male respondents tend to get married later than female respondents. 
+
+```{r, echo = FALSE}
+reduced_data %>% ggplot(aes(x = aged, y = age)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE) +
+  facet_wrap(~type)
+  theme_minimal()
+  
+reduced_data %>% ggplot(aes(x = aged, y = age)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = TRUE) +
+  facet_wrap(~sex)
+  theme_minimal()
+```
+
+
+
+# Discussion
+
+
+## First discussion point
+From our study we can see that family status does have effect on people's marriage. A person has an inextricably linked relationship with his family of origin that can affect him for the rest of his life, as well as his marriage. The marital quality of parents affects parental investment in child care. Positive parental marriage improves children's educational achievement, increases the length of time they stay in school, and thus delays the age of marriage. Parents with more positive emotional connections invested more in their children's quality and were more likely to promote their children's education; Love between parents may encourage children to spend more time looking for a suitable partner, while a comfortable home environment may discourage children from leaving home. It is worth noting that although there is a big difference in the time of marriage between men and women. There is a significant positive correlation between parents' marital conflict and children's dropping out of school, and marital conflict brings low marital quality, reduces parents' family quality, and increases children's motivation to leave home. While marriage is actually the only acceptable way for children to leave their parents' home for a long time, parental conflict can accelerate their departure from school and into marriage.
+
+Moreover, the marital quality of parents will have an impact on children's family and marriage attitudes and behavior. The positive marital relationship of parents will make children better socialized and less likely to marry early and be arranged by their parents. Therefore, the marriage age is delayed and the possibility of early marriage is removed, which will make children more likely to obtain higher educational levels.  Finally, positive marital quality reduces the motivation of children to leave the family, while in Nepal, children entering marriage is an important living arrangement away from home, thus leading to delayed marriage. 
+
+
+## Second discussion point
+Parents' interaction patterns also affect their children's love and marriage views.  In this respect, the influence of opposite-sex parents is greater.  That is fathers influence daughters, and mothers influence sons. 
+ 
+Father's influence on daughters could be that if the relationship is harmonious and the father is amiable, the daughter will find a partner who looks like her father. On the contrary, if she does not like her father, she will not find a partner who looks like her father.  A girl wants a partner who has the strengths of her father but excludes his weaknesses.  These are all conscious things, and subjectively we can be, but sometimes a family has more influence on its children than it realizes. 
+
+If a girl has such a father who likes smoking, drinking, violent, often beat her mother and her, she will for sure hate her father. So she might think that when she grow up, she will not look for a guy like this father.  Later growing up, at the age to get married, someone introduced a guy to her, she first asked: smoke and drink?  Then she might find a man who doesn't drink or smoke and get married.  Strangely, after two years of marriage, her husband began to drink and smoke and beat her.  She was so angry that she divorced.  Then she might find another man who do not smoke do not drink, and soon get married, her husband also began to smoke and drink.  The woman was in huge pain, and she couldn't explain it, so she said, that's my fate.  Is this fate?  No, she has subconsciously identified with her parents' mode of interaction. People have magical power, you will make others treat you, so, to some extent, a wife can make her husband into what kind of person.  Some of these phenomena are controlled by our consciousness and we are aware of them, and some are controlled by our subconscious and we are not aware of them. 
+ 
+Mother could also have influence on son. If a mother is strong, or takes too much care of her son, the son will form a dependence on his mother, have no independent opinions, accustomed to being taken care of.  It's easier for him to find someone similar to his mother and continue to seek care in the marriage.  Some men prefer to date someone older than themselves, such as a brother or sister, or someone who is the same age as their mother. Many of these men have oedipal complex. 
+
+## Third discussion point
+In general, the quality of parents' marriage will significantly affect the child's education and the change of marital status, family as the basic unit of society has an important function, emotional communication, education, and the important function such as raising will be reflected in the child's body, relationships, love each other's husband and wife, more children will receive more education, marriage has a positive influence in the children's future.  At the same time, parents' experience and family characteristics, and other factors will have a significant impact on children's educational change, while parents' education and social educational atmosphere have a more significant impact on children's marriage time. 
+
+## Weaknesses and next steps
+In this paper, the discussion of the relationship between the first marriage of different genders are relatively short and weak. The data set and variables also contained very little information about it. In the future, as a general social study, gender should be an important variable to consider and mainly discuss about.
+
+
+\newpage
+
+\appendix
+
+# Appendix 
+## Survey
+The link of our survey: https://docs.google.com/forms/d/e/1FAIpQLSf-oLkV_HmqxQuBsb-nqPcYc4rzrq0Wgu-PYFWrCsYC7pYLSw/viewform?usp=sf_link
+
+
+
+\newpage
+
+
+# References
+
+@citeR
+@citetidyverse
+@citehaven
